@@ -1,0 +1,133 @@
+Sub StockMarket_Analysis()
+
+Dim Ticker As String
+Dim Yearly_Change As Double
+Dim Percent_Change As Double
+Dim Total_Stock_Volume As Double
+Dim Year_Open As Double
+Dim Year_Close As Double
+Dim Start_Num As Integer
+
+Dim ws As Worksheet
+
+For Each ws In Worksheets
+    ws.Range("I1").Value = "Ticker"
+    ws.Range("J1").Value = "Yearly Change"
+    ws.Range("K1").Value = "Percent Change"
+    ws.Range("L1").Value = "Total Stock Volume"
+    
+    Start_Num = 2
+    Total_Stock_Volume = 0
+    Previous_i = 1
+    
+    LastRow = ws.Cells(Rows.Count, "A").End(xlUp).Row
+        For i = 2 To LastRow
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            Ticker = ws.Cells(i, 1).Value
+            Previous_i = Previous_i + 1
+            Year_Open = ws.Cells(Previous_i, 3).Value
+            Year_Close = ws.Cells(i, 6).Value
+            
+            For j = Previous_i To i
+                Total_Stock_Volume = Total_Stock_Volume + ws.Cells(j, 7).Value
+            Next j
+            
+            If Year_Open = 0 Then
+                Percent_Change = Year_Close
+            Else
+                Yearly_Change = Year_Close - Year_Open
+                Percent_Change = Yearly_Change / Year_Open
+            End If
+            
+        '------------------------------------------------------------
+            ws.Cells(Start_Num, 9).Value = Ticker
+            ws.Cells(Start_Num, 10).Value = Yearly_Change
+            ws.Cells(Start_Num, 11).Value = Percent_Change
+            ws.Cells(Start_Num, 11).NumberFormat = "0.00%"
+            ws.Cells(Start_Num, 12).Value = Total_Stock_Volume
+        
+            Start_Num = Start_Num + 1
+        
+            Total_Stock_Volume = 0
+            Yearly_Change = 0
+            Percent_Change = 0
+        
+            Previous_i = i
+        
+      End If
+    Next i
+                 
+  'Second table
+  
+    kLastRow = ws.Cells(Rows.Count, "K").End(xlUp).Row
+    
+    increase = 0
+    decrease = 0
+    greatest = 0
+    
+        For k = 3 To kLastRow
+              last_k = k - 1
+              current_k = ws.Cells(k, 11).Value
+              previous_k = ws.Cells(last_k, 11).Value
+              volume = ws.Cells(k, 12).Value
+              previous_vol = ws.Cells(last_k, 12).Value
+              
+              If increase > current_k And increase > previous_k Then
+                    increase = increase
+              ElseIf current_k > increase And current_k > previous_k Then
+                    increase = current_k
+                    increase_name = ws.Cells(k, 9).Value
+             ElseIf previous_k > increase And previous_k > current_k Then
+                    increase = previous_k
+                    increase_name = ws.Cells(last_k, 9).Value
+              End If
+              
+              If decrease < current_k And decrease < previous_k Then
+                    decrease = decrease
+              ElseIf current_k < increase And current_k < previous_k Then
+                    decrease = current_k
+                    decrease_name = ws.Cells(k, 9).Value
+              ElseIf previous_k < increase And previous_k < current_k Then
+                    decrease = previous_k
+                    decrease_name = ws.Cells(last_k, 9).Value
+              End If
+              
+              If greatest > volume And greatest > previous_vol Then
+                    greatest = greatest
+             ElseIf volume > greatest And volume > previous_vol Then
+                    greatest = volume
+                    greatest_name = ws.Cells(k, 9).Value
+            ElseIf previous_vol > greatest And previous_vol > volume Then
+                    greatest = previous_vol
+                    greatest_name = ws.Cells(last_k, 9).Value
+            End If
+        Next k
+    
+    ws.Range("N1").Value = "Column Name"
+    ws.Range("N2").Value = "Greatest % Increase"
+    ws.Range("N3").Value = "Greatest % Decrease"
+    ws.Range("N4").Value = "Greatest Total Volume"
+    ws.Range("O1").Value = "Ticker Name"
+    ws.Range("P1").Value = "Value"
+    
+    ws.Range("O2").Value = increase_name
+    ws.Range("O3").Value = decrease_name
+    ws.Range("O4").Value = greatest_name
+    ws.Range("P2").Value = increase
+    ws.Range("P3").Value = decrease
+    ws.Range("P4").Value = greatest
+    
+    ws.Range("P2").NumberFormat = "0.00%"
+    ws.Range("P3").NumberFormat = "0.00%"
+    
+    jLastRow = ws.Cells(Rows.Count, "J").End(xlUp).Row
+        For j = 2 To jLastRow
+            If ws.Cells(j, 10) > 0 Then
+                ws.Cells(j, 10).Interior.ColorIndex = 4
+            Else
+                ws.Cells(j, 10).Interior.ColorIndex = 3
+            End If
+        Next j
+
+Next ws
+End Sub
